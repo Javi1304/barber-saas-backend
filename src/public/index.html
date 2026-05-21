@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Barber SaaS - Nordicka Barbería</title>
+    <style>
+        :root { --bg: #121214; --card: #1a1a1e; --accent: #ca8a04; --text: #e2e8f0; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
+        .window { display: none; max-width: 600px; margin: 40px auto; background: var(--card); padding: 25px; border-radius: 8px; box-shadow: 0 8px 16px rgba(0,0,0,0.5); }
+        .window.active { display: block; }
+        h2 { color: var(--accent); margin-top: 0; text-align: center; }
+        label { display: block; margin: 12px 0 4px; font-weight: bold; }
+        input, select, button { width: 100%; padding: 12px; margin-bottom: 10px; background: #26262b; border: 1px solid #45454a; color: white; border-radius: 6px; box-sizing: border-box; font-size: 1em; }
+        button { background: var(--accent); color: black; font-weight: bold; cursor: pointer; border: none; transition: 0.2s; }
+        button:hover { background: #a16207; }
+        
+        .tabs-auth { display: flex; gap: 10px; margin-bottom: 20px; }
+        .tab-btn { background: #26262b; color: #9ca3af; border: 1px solid #45454a; padding: 10px; cursor: pointer; text-align: center; flex: 1; border-radius: 6px; font-weight: bold; }
+        .tab-btn.selected { background: var(--accent); color: black; border: none; }
+
+        .chat-box { height: 280px; overflow-y: auto; background: #0f0f11; padding: 15px; border-radius: 6px; border: 1px solid #45454a; margin-bottom: 15px; }
+        .msg { margin-bottom: 10px; padding: 10px 14px; border-radius: 6px; max-width: 85%; line-height: 1.4; white-space: pre-line; }
+        .bot { background: #1e3a8a; color: #bfdbfe; }
+        .user { background: #4b5563; color: white; margin-left: auto; text-align: right; }
+        
+        .ticket-final { background: #14532d; color: #e8f5e9; border: 1px solid #22c55e; padding: 15px; border-radius: 6px; margin-top: 10px; text-align: left; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.9em; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #45454a; }
+        th { background: #26262b; color: var(--accent); }
+        .nav-back { display: block; text-align: center; margin-top: 15px; color: #9ca3af; cursor: pointer; text-decoration: underline; }
+        .historial-seccion { margin-top: 30px; border-top: 1px solid #45454a; padding-top: 15px; }
+    </style>
+</head>
+<body>
+
+<div style="text-align: center; margin-bottom: 10px;">
+    <span style="font-size: 0.85em; color: #6b7280;">Sustento Lógico Multitenant & IA Activo</span>
+</div>
+
+<div id="winAuth" class="window active">
+    <h2>💈 Sistema de Acceso Nordicka SaaS</h2>
+    <div class="tabs-auth">
+        <div id="btnTabLogin" class="tab-btn selected" onclick="cambiarModoAuth('login')">Iniciar Sesión</div>
+        <div id="btnTabRegister" class="tab-btn" onclick="cambiarModoAuth('register')">Registrarse</div>
+    </div>
+    <div id="formNombreContainer" style="display: none;">
+        <label>Nombre Completo:</label>
+        <input type="text" id="authNombre" placeholder="Ej. Carlos Mendoza">
+    </div>
+    <label id="lblUsuarioInput">Nombre de Usuario:</label>
+    <input type="text" id="authUsername" placeholder="Ingresa tu usuario">
+    <div id="formEmailContainer" style="display: none;">
+        <label>Correo Electrónico:</label>
+        <input type="email" id="authEmail" placeholder="ejemplo@correo.com">
+    </div>
+    <label>Contraseña:</label>
+    <input type="password" id="authPassword" placeholder="Escribe tu contraseña segura">
+    <div id="formRolContainer" style="display: none;">
+        <label>Tipo de Perfil / Rol:</label>
+        <select id="authRol">
+            <option value="cliente">Cliente (Agendar Citas)</option>
+            <option value="barbero">Personal / Barbero (Ver Agenda)</option>
+        </select>
+    </div>
+    <button id="btnEjecutarAuth" onclick="procesarAutenticacion()">Ingresar Seguro</button>
+</div>
+
+<div id="winCliente" class="window">
+    <h2>🤖 Asistente IA de Reservas</h2>
+    <p style="font-size: 0.85em; text-align: center; color: #a1a1aa;">Santos Degollado #67, Colima Centro</p>
+    
+    <div class="chat-box" id="chatBox"></div>
+    <div id="chatControls" style="display: flex; gap: 5px;">
+        <input type="text" id="chatInput" placeholder="Responde aquí al Asistente Virtual...">
+        <button onclick="procesarRespuestaChat()" style="width: 90px; margin-top: 0;">Enviar</button>
+    </div>
+
+    <div id="moduloMercadoPago" style="display: none; background: #222227; padding: 20px; border-radius: 6px; margin-top: 15px; border: 1px dashed #009ee3; text-align: center;">
+        <h3 style="color: #009ee3; margin-top: 0; font-size: 1.1em;">¼ Procesamiento con Mercado Pago</h3>
+        <button onclick="procesarYRedireccionarMercadoPago()" style="background: #009ee3; color: white;">🚀 Confirmar Reserva e Ir a Pagar $5.00</button>
+    </div>
+
+    <div class="historial-seccion">
+        <h3 style="color: var(--accent); font-size: 1.1em; margin-bottom: 5px;">📅 Mis Citas Agendadas</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Servicio</th>
+                    <th>Fecha y Hora</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody id="tablaHistorialCliente"></tbody>
+        </table>
+    </div>
+
+    <span class="nav-back" onclick="cerrarSesion()">← Cerrar Sesión</span>
+</div>
+
+<div id="winBarbero" class="window" style="max-width: 800px;">
+    <h2>💈 Agenda de Clientes Ordenada (Vista de Personal)</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Nombre Cliente</th>
+                <th>Edad</th>
+                <th>Servicio</th>
+                <th>Fecha y Hora</th>
+            </tr>
+        </thead>
+        <tbody id="tablaAgenda"></tbody>
+    </table>
+    <button onclick="cargarAgendaBarbero()" style="background: #2563eb; color: white; margin-top: 20px;">🔄 Sincronizar Agenda</button>
+    <span class="nav-back" onclick="cerrarSesion()">← Cerrar Sesión</span>
+</div>
+
+<script>
+    let modoAuth = 'login'; 
+    let usuarioSesion = null;
+    let datosCitaFlujo = { edad: '21', fecha: '', hora: '' };
+    let pasoChat = 0;
+
+    function irAVentana(idVentana) {
+        document.querySelectorAll('.window').forEach(w => w.classList.remove('active'));
+        document.getElementById(idVentana).classList.add('active');
+    }
+
+    function cambiarModoAuth(modo) {
+        modoAuth = modo;
+        document.getElementById('btnTabLogin').classList.toggle('selected', modo === 'login');
+        document.getElementById('btnTabRegister').classList.toggle('selected', modo === 'register');
+        document.getElementById('formNombreContainer').style.display = modo === 'register' ? 'block' : 'none';
+        document.getElementById('formEmailContainer').style.display = modo === 'register' ? 'block' : 'none';
+        document.getElementById('formRolContainer').style.display = modo === 'register' ? 'block' : 'none';
+        
+        const lblUsuario = document.getElementById('lblUsuarioInput');
+        lblUsuario.innerText = modo === 'login' ? "Nombre de Usuario:" : "Elige un Nombre de Usuario (Único):";
+        document.getElementById('btnEjecutarAuth').innerText = modo === 'register' ? 'Crear Cuenta Nueva' : 'Ingresar Seguro';
+    }
+
+    async function procesarAutenticacion() {
+        const username = document.getElementById('authUsername').value.trim();
+        const password = document.getElementById('authPassword').value.trim();
+        if (!username || !password) return alert("Por favor, rellena los campos requeridos.");
+
+        if (modoAuth === 'register') {
+            const nombre = document.getElementById('authNombre').value.trim();
+            const email = document.getElementById('authEmail').value.trim();
+            const rol = document.getElementById('authRol').value;
+            if (!nombre || !email) return alert("Por favor completa todos los campos.");
+            if (username.toLowerCase() === password.toLowerCase()) {
+                return alert("Por seguridad, la contraseña no puede ser igual al usuario.");
+            }
+
+            const res = await fetch('/api/auth/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nombre, username, email, password, rol })
+            });
+            const data = await res.json();
+            if (!res.ok) return alert("Error: " + data.error);
+            alert("¡Cuenta creada! Inicia sesión.");
+            cambiarModoAuth('login');
+        } else {
+            const res = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+            const data = await res.json();
+            if (!res.ok) return alert("Error: " + data.error);
+            
+            usuarioSesion = data.usuario;
+            if (usuarioSesion.rol === 'cliente') {
+                irAVentana('winCliente');
+                iniciarChatbot();
+                cargarHistorialCliente();
+            } else {
+                irAVentana('winBarbero');
+                cargarAgendaBarbero();
+            }
+        }
+    }
+
+    function cerrarSesion() {
+        usuarioSesion = null;
+        document.getElementById('authUsername').value = '';
+        document.getElementById('authPassword').value = '';
+        cambiarModoAuth('login');
+        irAVentana('winAuth');
+    }
+
+    const chatBox = document.getElementById('chatBox');
+    function appendMsg(sender, text) {
+        chatBox.innerHTML += `<div class="msg ${sender}">${text}</div>`;
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function iniciarChatbot() {
+        chatBox.innerHTML = '';
+        pasoChat = 1;
+        appendMsg('bot', `🤖 ¡Hola <b>${usuarioSesion.nombre}</b>! Soy tu asistente de Nordicka. Veo que deseas agendar un <b>Corte Clásico Promocional por $5</b>.<br><br>Para empezar, ¿qué edad tienes?`);
+    }
+
+    function procesarRespuestaChat() {
+        const input = document.getElementById('chatInput');
+        const txt = input.value.trim();
+        if(!txt) return;
+
+        appendMsg('user', txt);
+        input.value = '';
+
+        setTimeout(() => {
+            if(pasoChat === 1) {
+                datosCitaFlujo.edad = txt || "21";
+                pasoChat = 2;
+                appendMsg('bot', `Entendido. Indícame la fecha deseada en formato <b>AAAA-MM-DD</b> (Ej: 2026-06-01):`);
+            } 
+            else if(pasoChat === 2) {
+                datosCitaFlujo.fecha = txt;
+                pasoChat = 3;
+                appendMsg('bot', `Por favor, ingresa la hora exacta en formato de 24 horas (Ejemplo: 07:00 o 18:30).`);
+            }
+            else if(pasoChat === 3) {
+                datosCitaFlujo.hora = txt;
+                pasoChat = 4;
+                appendMsg('bot', `🤖 Todo listo. Presiona el botón inferior para procesar los controles de disponibilidad y proceder con Mercado Pago.`);
+                document.getElementById('chatControls').style.display = 'none';
+                document.getElementById('moduloMercadoPago').style.display = 'block';
+            }
+        }, 800);
+    }
+
+    async function procesarYRedireccionarMercadoPago() {
+        const fechaHoraCompleta = `${datosCitaFlujo.fecha} ${datosCitaFlujo.hora}:00`;
+        
+        const payload = {
+            barberia_id: 1,
+            usuario_id: usuarioSesion.id, 
+            servicio_id: 1,
+            fecha_hora: fechaHoraCompleta,
+            edad_cliente: datosCitaFlujo.edad
+        };
+
+        const res = await fetch('/api/citas', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        
+        const data = await res.json();
+
+        if(res.ok) {
+            document.getElementById('moduloMercadoPago').style.display = 'none';
+            document.getElementById('chatControls').style.display = 'flex';
+            appendMsg('bot', `<div class="ticket-final">✅ <b>¡RESERVA CONFIRMADA!</b><br>La hora se validó correctamente. Se abrió la ventana de Mercado Pago para procesar el abono.</div>`);
+            //window.open('https://mpago.la/1jDqUa7', '_blank');
+            alert("¡Cita registrada con éxito en MySQL local!");
+            pasoChat = 1;
+            iniciarChatbot();
+            cargarHistorialCliente(); 
+        } else {
+            alert("⚠️ Bloqueo de Agenda: " + data.error);
+            document.getElementById('moduloMercadoPago').style.display = 'none';
+            document.getElementById('chatControls').style.display = 'flex';
+            pasoChat = 2;
+            appendMsg('bot', `❌ Ese horario ya está ocupado. Por favor ingresa otra **Fecha** válida (AAAA-MM-DD):`);
+        }
+    }
+
+    async function cargarHistorialCliente() {
+        if (!usuarioSesion) return;
+        try {
+            const res = await fetch(`/api/cliente/citas/${usuarioSesion.id}`);
+            const citas = await res.json();
+            const tbody = document.getElementById('tablaHistorialCliente');
+            tbody.innerHTML = '';
+            
+            if(citas.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;color:#6b7280;">Aún no tienes citas</td></tr>`;
+                return;
+            }
+            citas.forEach(c => {
+                // CORREGIDO: Corta la cadena limpiando de forma estricta los strings sin alterar la hora
+                let fechaLimpia = String(c.fecha_hora).replace('T', ' ').substring(0, 16);
+                tbody.innerHTML += `<tr><td>${c.servicio}</td><td><code>${fechaLimpia}</code></td><td style="color:#22c55e;">Abonada</td></tr>`;
+            });
+        } catch(e) { console.error(e); }
+    }
+
+    async function cargarAgendaBarbero() {
+        try {
+            const res = await fetch('/api/barbero/agenda');
+            const citas = await res.json();
+            const tbody = document.getElementById('tablaAgenda');
+            tbody.innerHTML = '';
+
+            if(!citas || citas.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#6b7280;">No hay registros</td></tr>`;
+                return;
+            }
+
+            citas.forEach(c => {
+                // CORREGIDO: Respeta el string limpio que viene de la BD
+                let fechaLegible = String(c.fecha_hora).replace('T', ' ').substring(0, 16);
+                const partesEstado = c.estado && c.estado.includes('-') ? c.estado.split('-') : [];
+                const edadMostrar = partesEstado[1] ? `${partesEstado[1]} años` : '21 años';
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td><b>${c.cliente || 'Cliente'}</b></td>
+                        <td>${edadMostrar}</td>
+                        <td><span style="color:var(--accent);">${c.servicio || 'Corte'}</span></td>
+                        <td><code>${fechaLegible}</code></td>
+                    </tr>
+                `;
+            });
+        } catch(err) { console.error(err); }
+    }
+</script>
+</body>
+</html>
