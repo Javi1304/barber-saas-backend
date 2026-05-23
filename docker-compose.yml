@@ -8,7 +8,7 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: rootpassword
       MYSQL_DATABASE: barber_saas
-      TZ: America/Mexico_City  # Sincroniza la base de datos con la hora de CDMX
+      TZ: America/Mexico_City  
     ports:
       - "3306:3306"
     volumes:
@@ -27,7 +27,7 @@ services:
       DB_USER: root
       DB_PASSWORD: rootpassword
       DB_NAME: barber_saas
-      TZ: America/Mexico_City  # Forza a Node.js a interpretar todo en la hora de CDMX
+      TZ: America/Mexico_City  
     depends_on:
       - db
     volumes:

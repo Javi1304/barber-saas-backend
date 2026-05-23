@@ -1,3 +1,4 @@
+
 CREATE DATABASE IF NOT EXISTS barber_saas;
 USE barber_saas;
 

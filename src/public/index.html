@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -256,8 +257,8 @@
             document.getElementById('moduloMercadoPago').style.display = 'none';
             document.getElementById('chatControls').style.display = 'flex';
             appendMsg('bot', `<div class="ticket-final">✅ <b>¡RESERVA CONFIRMADA!</b><br>La hora se validó correctamente. Se abrió la ventana de Mercado Pago para procesar el abono.</div>`);
-            //window.open('https://mpago.la/1jDqUa7', '_blank');
-            alert("¡Cita registrada con éxito en MySQL local!");
+            window.open('https://mpago.la/1jDqUa7', '_blank');
+
             pasoChat = 1;
             iniciarChatbot();
             cargarHistorialCliente(); 
